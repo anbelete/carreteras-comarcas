@@ -10,60 +10,49 @@
 </head>
 <body>
   <div id="map"></div>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map');
 
-    // Fondo personalizado con límites administrativos
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([42.5, -2.5], 10);
+
+    // Cargar comarca (polígono)
     fetch('jacetania/d_comarca_La Jacetania.geojson')
       .then(res => res.json())
       .then(data => {
-        const fondoLayer = L.geoJSON(data, {
-          style: {
-            color: '#cccccc',
-            weight: 1,
-            fillColor: '#eeeeee',
-            fillOpacity: 1
-          }
+        const comarcaLayer = L.geoJSON(data, {
+          style: { color: 'blue', weight: 2, fillOpacity: 0.1 }
         }).addTo(map);
-
-        // Centrar el mapa en la comarca
-        map.fitBounds(fondoLayer.getBounds());
+        map.fitBounds(comarcaLayer.getBounds());  // Centra el mapa en la comarca
       });
 
-    // Cargar y mostrar núcleos de población
+    // Cargar pueblos (puntos con nombre)
     fetch('jacetania/nucleos.geojson')
       .then(res => res.json())
       .then(data => {
         L.geoJSON(data, {
-          onEachFeature: (feature, layer) => {
-            if (feature.properties && feature.properties.d_nucleo_i) {
-              layer.bindTooltip(feature.properties.d_nucleo_i, {
-                permanent: true,
-                direction: 'right'
-              });
-            }
-          },
-          pointToLayer: (feature, latlng) => 
-            L.circleMarker(latlng, { radius: 5, color: '#000' })
+          pointToLayer: (feature, latlng) => {
+            return L.circleMarker(latlng, {
+              radius: 5,
+              fillColor: "red",
+              color: "#000",
+              weight: 1,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).bindTooltip(feature.properties.nombre || "Pueblo", {
+              permanent: true,
+              direction: "top",
+              offset: [0, -8]
+            });
+          }
         }).addTo(map);
       });
 
-    // Cargar todas las carreteras, elegir una aleatoria
+    // Cargar carreteras (líneas)
     fetch('jacetania/carreteras.geojson')
       .then(res => res.json())
       .then(data => {
-        const features = data.features;
-        const randomFeature = features[Math.floor(Math.random() * features.length)];
-
-        const carreteraLayer = L.geoJSON(randomFeature, {
-          style: { color: 'red', weight: 4 },
-          onEachFeature: (feature, layer) => {
-            layer.on('click', () => {
-              const nombre = feature.properties.NOMBRE || "Carretera sin nombre";
-              layer.bindPopup(`Carretera: ${nombre}`).openPopup();
-            });
-          }
+        L.geoJSON(data, {
+          style: { color: 'gray', weight: 2 }
         }).addTo(map);
       });
   </script>
