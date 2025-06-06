@@ -19,7 +19,7 @@
     }).addTo(map);
 
     // Cargar y mostrar núcleos de población
-    fetch('json/jacetania/nucleos.geojson')
+    fetch('jacetania/nucleos.geojson')
       .then(res => res.json())
       .then(data => {
         L.geoJSON(data, {
@@ -33,7 +33,7 @@
       });
 
     // Cargar todas las carreteras, elegir una aleatoria
-    fetch('json/jacetania/carreteras.geojson')
+    fetch('jacetania/carreteras.geojson')
       .then(res => res.json())
       .then(data => {
         const features = data.features;
