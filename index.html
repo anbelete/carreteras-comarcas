@@ -12,11 +12,24 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([40.4168, -3.7038], 6); // Centrado en España por defecto
+    const map = L.map('map');
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    // Fondo personalizado con límites administrativos
+    fetch('jacetania/d_comarca_La Jacetania.geojson')
+      .then(res => res.json())
+      .then(data => {
+        const fondoLayer = L.geoJSON(data, {
+          style: {
+            color: '#cccccc',
+            weight: 1,
+            fillColor: '#eeeeee',
+            fillOpacity: 1
+          }
+        }).addTo(map);
+
+        // Centrar el mapa en la comarca
+        map.fitBounds(fondoLayer.getBounds());
+      });
 
     // Cargar y mostrar núcleos de población
     fetch('jacetania/nucleos.geojson')
@@ -24,11 +37,15 @@
       .then(data => {
         L.geoJSON(data, {
           onEachFeature: (feature, layer) => {
-            if (feature.properties && feature.properties.nombre) {
-              layer.bindTooltip(feature.properties.d_nucleo_i, { permanent: true, direction: 'right' });
+            if (feature.properties && feature.properties.d_nucleo_i) {
+              layer.bindTooltip(feature.properties.d_nucleo_i, {
+                permanent: true,
+                direction: 'right'
+              });
             }
           },
-          pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 5, color: '#000' })
+          pointToLayer: (feature, latlng) => 
+            L.circleMarker(latlng, { radius: 5, color: '#000' })
         }).addTo(map);
       });
 
@@ -48,10 +65,6 @@
             });
           }
         }).addTo(map);
-
-        map.fitBounds(carreteraLayer.getBounds());
       });
-
   </script>
 </body>
-</html>
